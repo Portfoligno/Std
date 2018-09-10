@@ -14,8 +14,24 @@ public class Std {
   private static void println(@NotNull PrintStream stream, @Nullable Message message) {
     ThreadLocal<Message> messages = MessageWrapper.messages;
     messages.set(message);
-    stream.println(MessageWrapper.INSTANCE);
-    messages.remove();
+
+    try {
+      stream.println(MessageWrapper.INSTANCE);
+    }
+    catch (StackOverflowError t) {
+      err("Error during message construction.");
+      err(t);
+    }
+    // Avoid catching fatal errors
+    catch (VirtualMachineError t) { throw t; }
+    catch (ThreadDeath t) { throw t; }
+    catch (Throwable t) {
+      err("Error during message construction.");
+      err(t);
+    }
+    finally {
+      messages.remove();
+    }
   }
 
   private static void printStackTrace(@NotNull PrintStream stream, @Nullable Throwable throwable) {
