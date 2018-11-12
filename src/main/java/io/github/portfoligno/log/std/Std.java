@@ -11,6 +11,7 @@ public class Std {
     stream.println(message == null ? "null" : message);
   }
 
+  @SuppressWarnings("ConstantConditions")
   private static void println(@NotNull PrintStream stream, @Nullable Message message) {
     ThreadLocal<Message> messages = MessageWrapper.messages;
     messages.set(message);
@@ -26,7 +27,18 @@ public class Std {
     catch (VirtualMachineError t) { throw t; }
     catch (ThreadDeath t) { throw t; }
     catch (Throwable t) {
-      err("Error during message construction.");
+      // Message construction should not consist of threading logic, but when it does,
+      // we do our best to remove interference of this logging call to the program
+      if (!(t instanceof InterruptedException)) {
+        err("Error during message construction.");
+      }
+      else if (InterruptedExceptionHandling.ENABLED) {
+        Thread.currentThread().interrupt();
+        err("InterruptedException caught during message construction.");
+      }
+      else {
+        throw InterruptedExceptionHandling.<RuntimeException>sneakyThrow(t);
+      }
       err(t);
     }
     finally {
