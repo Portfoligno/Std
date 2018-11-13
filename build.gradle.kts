@@ -1,6 +1,7 @@
 plugins {
   maven
   `java-library`
+  kotlin("jvm") version "1.3.0"
 }
 tasks.withType<Wrapper> {
   gradleVersion = "4.10.2"
@@ -15,5 +16,8 @@ repositories {
   jcenter()
 }
 dependencies {
-  compileOnly("org.jetbrains:annotations:16.0.2")
+  compileOnly("org.jetbrains:annotations:16.0.3")
+
+  testImplementation(kotlin("stdlib"))
+  testImplementation("io.kotlintest:kotlintest-runner-junit5:3.1.10")
 }
