@@ -3,7 +3,7 @@ plugins {
   `java-library`
 }
 tasks.withType<Wrapper> {
-  gradleVersion = "4.10"
+  gradleVersion = "4.10.2"
 }
 
 java {
