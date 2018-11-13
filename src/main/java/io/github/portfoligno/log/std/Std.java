@@ -7,17 +7,10 @@ import org.jetbrains.annotations.Nullable;
 import java.io.PrintStream;
 
 public class Std {
-  private static void println(@NotNull PrintStream stream, @Nullable Object message) {
-    stream.println(message == null ? "null" : message);
-  }
-
   @SuppressWarnings("ConstantConditions")
-  private static void println(@NotNull PrintStream stream, @Nullable Message message) {
-    ThreadLocal<Message> messages = MessageWrapper.messages;
-    messages.set(message);
-
+  private static void printlnNonNull(@NotNull PrintStream stream, @NotNull Object message) {
     try {
-      stream.println(MessageWrapper.INSTANCE);
+      stream.println(message);
     }
     catch (StackOverflowError t) {
       err("Error during message construction.");
@@ -40,6 +33,24 @@ public class Std {
         throw InterruptedExceptionHandling.<RuntimeException>sneakyThrow(t);
       }
       err(t);
+    }
+  }
+
+  private static void println(@NotNull PrintStream stream, @Nullable Object message) {
+    if (message == null) {
+      stream.println("null");
+    }
+    else {
+      printlnNonNull(stream, message);
+    }
+  }
+
+  private static void println(@NotNull PrintStream stream, @Nullable Message message) {
+    ThreadLocal<Message> messages = MessageWrapper.messages;
+    messages.set(message);
+
+    try {
+      printlnNonNull(stream, MessageWrapper.INSTANCE);
     }
     finally {
       messages.remove();
